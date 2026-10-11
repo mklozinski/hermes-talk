@@ -126,7 +126,22 @@ def _scale_wall_clock_waits():
 
 
 @pytest.fixture(autouse=True)
-def _ephemeral_runs_optin(monkeypatch):
+def _isolated_talk_config(monkeypatch):
+    """Use defaults unless a test explicitly selects its own Talk configuration.
+
+    Developer shells and Hermes gateways can export Live mode and task targets.
+    Inheriting those makes offline provider-policy tests take the canonical
+    refusal path instead, including never reaching the fake connect awaited by
+    cancellation tests. Preserve only the suite's deliberate TALK_TEST_* knobs.
+    """
+
+    for key in tuple(os.environ):
+        if key.startswith("TALK_") and not key.startswith("TALK_TEST_"):
+            monkeypatch.delenv(key)
+
+
+@pytest.fixture(autouse=True)
+def _ephemeral_runs_optin(monkeypatch, _isolated_talk_config):
     """The suite's EXPLICIT opt-in to non-durable run acceptance.
 
     The run-history tee is inert under pytest by design (see

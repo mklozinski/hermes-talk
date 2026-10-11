@@ -126,6 +126,12 @@ host against a stub plugin context, audio against fakes. That's why CI
 needs nothing from you — no keys, no env, no fixtures — and why a test
 that wants the network is a test shaped wrong for this repo.
 
+The test fixtures clear inherited `TALK_*` configuration (except deliberate
+`TALK_TEST_*` suite controls); a test selects its own mode or task with
+`monkeypatch.setenv`. Otherwise a developer's `TALK_VOICE_MODE=live` or
+`TALK_TASK_TARGET` can route offline provider tests into a startup refusal,
+including a cancellation test waiting for a fake connect that never starts.
+
 **One trap on a box that runs the plugin for real** ([#93](https://github.com/TheSmokeDev/hermes-talk/issues/93)):
 if `hermes-agent` is importable from the interpreter running the tests —
 which it is when `pytest` resolves to the Hermes install's own venv, e.g.

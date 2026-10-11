@@ -130,16 +130,13 @@ target-version = "py311"
 # Two pins, because either one alone still lets a ruff release turn the build
 # red. The RULE SET is pinned here so a new default rule cannot arrive
 # unannounced; the ruff VERSION is pinned in the dev extra above, because the
-# same rule set does not mean the same thing across versions. ruff 0.16 stopped
-# reporting BLE001 when the handler logs the exception through a name it
-# recognises as a logger — it recognises `logger`, not `_log` — so the three
-# handlers in talk_core_provider.py (the only module here that both names its
-# logger `logger` and carries BLE001 directives) had their `noqa` retired and
-# failed CI on RUF100, while every dev box on 0.15.x still required them. Bump
-# both pins together, in their own PR, and expect directives to move. BLE stays
-# on because this codebase catches broadly on purpose (a live voice call must
-# not die on a stack trace) — each one says why, whether or not the current
-# ruff still needs a directive to allow it.
+# same rule set does not mean the same thing across versions. This compatibility
+# branch pins 0.15.10, which requires BLE001 directives even when a handler logs
+# through `logger`; 0.16 recognises that name and flags those directives as
+# unused (RUF100). Keep the three readiness directives in talk_core_provider.py
+# with this pin, and recheck them whenever the pin changes. BLE stays on because
+# this codebase catches broadly on purpose (a live voice call must not die on a
+# stack trace) — each directive explains why the catch is deliberate.
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "SIM", "RUF", "BLE"]
 

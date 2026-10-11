@@ -579,10 +579,14 @@ def test_cancellation_during_connect_closes_every_session_owned_resource(monkeyp
                 session_factory=lambda _auth: fake,
             )
         )
-        await fake.connect_started.wait()
-        task.cancel()
+        try:
+            # A startup refusal never calls connect. Fail locally rather than
+            # waiting until pytest's process-wide timeout kills the whole suite.
+            await asyncio.wait_for(fake.connect_started.wait(), 1.0)
+        finally:
+            task.cancel()
         with pytest.raises(asyncio.CancelledError):
-            await task
+            await asyncio.wait_for(task, 1.0)
         return fake, ledger, audio, sweeps
 
     fake, ledger, audio, sweeps = asyncio.run(scenario())
